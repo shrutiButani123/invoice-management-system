@@ -43,15 +43,16 @@
     <h2>Invoice {{ $invoice->id }}</h2>
     <a href="{{ route('invoice.pdf', $invoice->id) }}"  class="btn btn-sm btn-info">Print</a>
     </div>
-    <p><strong>Customer:</strong> {{ $invoice->name }}</p>
-    <p><strong>Total Amount:</strong> ${{ number_format($invoice->total_amount, 2) }}</p>
+    <p><strong>Customer:</strong> {{ $invoice->customer_name }}</p>
+    <p><strong>Total Amount:</strong> {{ number_format($invoice->total_amount, 2) }}</p>
+    <p><strong>Payment Status:</strong> {{ ($invoice->status) }}</p>
 
     <h4>Invoice Items</h4>
     <table class="table">
         <thead>
             <tr>
                 <th>#</th>
-                <th>Item</th>
+                <th>Items</th>
                 <th>Quantity</th>
                 <th>Price</th>
             </tr>
@@ -60,7 +61,7 @@
             @foreach ($invoice->invoiceItems as $item)
             <tr>
                 <td>{{ $loop->iteration }}</td>
-                <td>{{ $item->product_name }}</td>
+                <td>{{ $item->item->name }}</td>
                 <td>{{ $item->quantity }}</td>
                 <td>${{ number_format($item->price, 2) }}</td>
             </tr>

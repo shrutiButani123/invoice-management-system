@@ -51,7 +51,6 @@
                             @csrf
 
                             <div class="row mt-4">
-                                <!-- Customer Name -->
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">Customer Name</label>
@@ -114,7 +113,7 @@
                                     </div>
                                 </div><!--end col-->
                             </div>
-                            <!-- Description -->
+
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Description</label>
@@ -162,7 +161,7 @@
                                 <div class="col-lg-4 col-md-5 ms-auto">
                                     <ul class="list-unstyled h6 fw-normal mt-4 mb-0 ms-md-5 ms-lg-4">
                                         <li class="text-muted d-flex justify-content-between">Subtotal :<span class="final_subtotal"></span><input type="hidden" value="" name="final_subtotal" class="final_subtotal" required></li>
-                                        <li class="text-muted d-flex justify-content-between">Vat :<span class="final_tax">0 </span><input type="hidden" value="" name="final_tax" class="final_tax" required></li>                                    
+                                        <li class="text-muted d-flex justify-content-between">Tax :<span class="final_tax">0 </span><input type="hidden" value="" name="final_tax" class="final_tax" required></li>                                    
                                         <li class="d-flex justify-content-between" >Grand Total :<span class="final_grand_total"></span><input type="hidden" value="" name="final_grand_total" class="final_grand_total" required></li>
                                     </ul>
                                 </div><!--end col-->
@@ -185,7 +184,6 @@
 
 
 @section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script type="text/javascript">
     
 
@@ -212,30 +210,8 @@
                         <td>${deleteAction}</td>
                     </tr>`;
 
-        $('#invoice_body').append(row)
-        // rowNo += 1
+        $('#invoice_body').append(row)        
     }
-       
-    $(document).on('change', "select[name='item_name[]']", function(e) {
-        e.preventDefault();
-        var item_id = $(this).find('option:selected').val();
-        var dataid = $(this).attr('data-id');
-        // var dataid = $(this).data(id);
-
-        $.ajax({
-            type: 'GET',
-            url: '/get-item/'+item_id,
-            success: function(response) {
-                // console.log(response);
-                $('tr[data-id="'+dataid+'"] .quantity').val('1');
-                // $('.quantity[data-id="'+dataid+'"]').val('1');
-                // $('.amount[data-id="'+dataid+'"]').val(response.amount);
-                // $('.tax[data-id="'+dataid+'"]').val(response.tax);
-                // $('.grand_total[data-id="'+dataid+'"]').val(response.grand_total);
-            }
-
-        });
-    });
 
     $('table').on('mouseup keyup', 'input[type=number]', () => calculateTotals());
 
@@ -287,20 +263,12 @@
     });
 
     $(document).ready(function () {
-
-        // $('#invoice').DataTable({});  
-        // $('.invoice_date').flatpickr({});
-
         addRow(rowNo);
 
         $('#addrow_button').click(function(){
             rowNo += 1;
             addRow(rowNo);
         });
-
-        // $(".item_class").select2({
-        //     tags: true
-        // }); 
         
     });
 

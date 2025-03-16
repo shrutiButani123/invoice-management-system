@@ -10,16 +10,59 @@ use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Item;
 use App\Models\InvoiceItem;
-use Konekt\PdfInvoice\InvoicePrinter;
-use Illuminate\Support\Facades\File;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Yajra\DataTables\Facades\DataTables;
 
 class InvoiceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $invoices = Invoice::with('invoiceItems')->orderBy('created_at', 'desc')->paginate(10);
+        if ($request->ajax()) {
+            $invoices = Invoice::where('user_id', Auth::id())->with('invoiceItems')->orderBy('created_at', 'desc');
+
+            if (!empty($request->invoice_id)) {
+                $invoices->where('id', $request->invoice_id);
+            }
     
-        return view('invoice.index', compact('invoices'));
+            if (!empty($request->date_range)) {
+                $dates = explode(' to ', $request->date_range);
+                if (count($dates) == 2) {
+                    $startDate = \Carbon\Carbon::parse($dates[0])->startOfDay();
+                    $endDate = \Carbon\Carbon::parse($dates[1])->endOfDay();
+                    $invoices->whereBetween('invoice_date', [$startDate, $endDate]);
+                }
+            }
+    
+            return DataTables::of($invoices)
+                ->addIndexColumn()
+                ->editColumn('invoice_date', function ($invoice) {
+                    return \Carbon\Carbon::parse($invoice->invoice_date)->format('d M Y');
+                })
+                ->editColumn('due_date', function ($invoice) {
+                    return \Carbon\Carbon::parse($invoice->due_date)->format('d M Y');
+                })
+                ->editColumn('status', function ($invoice) {
+                    return $invoice->status == 'paid' 
+                        ? '<span class="badge bg-success">Paid</span>' 
+                        : '<span class="badge bg-warning text-dark">Unpaid</span>';
+                })
+                ->editColumn('grand_total', function ($invoice) {
+                    return number_format($invoice->grand_total, 2);
+                })
+                ->addColumn('actions', function ($invoice) {
+                    return '
+                        <a href="'.route('invoice.show', $invoice->id).'" class="btn btn-sm btn-info">View</a>
+                        <form action="'.route('invoice.destroy', $invoice->id).'" method="POST" class="d-inline" onsubmit="return confirm(\'Are you sure you want to delete this invoice?\');">
+                            '.csrf_field().'
+                            '.method_field('DELETE').'
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>';
+                })
+                ->rawColumns(['status', 'actions'])
+                ->make(true);
+        }
+    
+        return view('invoice.index');
     }
     
     /**
@@ -61,7 +104,7 @@ class InvoiceController extends Controller
         
         try {
             $invoice = new Invoice();
-            $invoice->user_id = 1;
+            $invoice->user_id = Auth::id();
             $invoice->customer_name = $request->customer_name;
             $invoice->description = $request->description;
             $invoice->due_date = $request->invoice_due_date;
@@ -103,78 +146,10 @@ class InvoiceController extends Controller
         return view('invoice.show')->with('success', 'Invoice Pdf created successfully!');
     }
 
-    public function generatePdf($req){
-        $invoicePdf  = new InvoicePrinter();
-
-        $invoicePdf->setColor('#007fff');
-        $invoicePdf->setType('Invoice');
-        $invoicePdf->setReference($req->id); 
-        $invoicePdf->setDate(date('dS M,Y',time()));
-        $invoicePdf->setDue(date('M dS ,Y',strtotime($req->invoice_due_date)));  
-        $invoicePdf->setFrom(array("Invoice Management"));
-
-        $customerData = Invoice::with('users')->where('user_id', 1)->first();
-
-        $invoicePdf->setTo(array($customerData['customer_name'] ));
-
-        $invoiceItems = InvoiceItem::where('invoice_id', Invoice::pluck('id')->last())->get();
-        foreach ($invoiceItems as $invoiceItem) {
-            $serviceName = null;
-        
-            if ($invoiceItem->services_name) {
-                $serviceName = $invoiceItem->services_name;
-            } else {
-                $service = Item::where('id', $invoiceItem->item_id)->first();
-                $serviceName = optional($service)->name ?? "Unknown Service"; // Handle null case
-            }
-        
-            $invoicePdf->addItem(
-                $serviceName,                  
-                "",                               
-                $invoiceItem->quantity,      
-                $invoiceItem->tax . '%',   
-                $invoiceItem->amount,        
-                $invoiceItem->grand_total,  
-                ""                               
-            );
-        }
-        
-        $invoiceData = Invoice::latest()->first();
-        $invoicePdf->addTotal("Sub Total", $invoiceData->amount);
-        $invoicePdf->addTotal("VAT", $invoiceData->tax);
-        $invoicePdf->addTotal("Discount", $invoiceData->discount);
-        $invoicePdf->addTotal("Grand Total", $invoiceData->grand_total,true);
-        
-        $invoicePdf->addBadge("Payment Paid");
-
-        $invoicePdf->addTitle("Important Notice");
-        
-        $invoicePdf->addParagraph("No item will be replaced or refunded if you don't have the invoice with you.");
-
-        $invoicePdf->addTitle("Bank Details");
-        
-        $invoicePdf->addParagraph("Bank Name:");
-        $invoicePdf->addParagraph("Account Name:");
-        $invoicePdf->addParagraph("Account Number:");
-        $invoicePdf->addParagraph("Branch Name:");
-        $invoicePdf->addParagraph("Branch Code:");
-        $invoicePdf->addParagraph("Account Type:");
-        $invoicePdf->addParagraph("Swift Code:");
-        $invoicePdf->addParagraph("Reference for Payment:");
-
-        $invoicePdf->setFooternote("Invoice Management");
-
-        $path = public_path('invoice');
-        if(!File::exists($path)) {
-            File::makeDirectory($path);
-            $pdfName = public_path('invoice').'\invoice_'.$req->invoice_number.'.pdf';
-        }
-        else {
-            $pdfName = public_path('invoice').'\invoice_'.$req->invoice_number.'.pdf';
-        }
-       
-        $savePdf =  $invoicePdf->render($pdfName,'F'); 
-        return $pdfName;
+    public function generatePdf($id){
+         $invoice = Invoice::with('invoiceItems')->findOrFail($id);
+         $pdf = Pdf::loadView('invoice.pdf', compact('invoice'));
+         return $pdf->download("invoice_{$invoice->id}.pdf");
     }
 
 

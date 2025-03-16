@@ -11,6 +11,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item"><a class="nav-link active" href="{{route('admin.dashboard')}}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{route('admin.invoices')}}">Inovices</a></li>
                 </ul>
             </div>
 

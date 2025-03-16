@@ -61,6 +61,10 @@
                   <div class="justify-content-center mt-3 mb-lg-4">
                     <button  type="submit" class="btn btn-primary btn-lg">Register</button>
                   </div>
+
+                  <div class="text-center">
+                    <p>Already have an account? <a href="{{ route('login.create') }}">Login here</a></p>
+                  </div>
                 </form>
 
               </div>
