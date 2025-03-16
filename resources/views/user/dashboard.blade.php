@@ -49,6 +49,30 @@
                     <div class="card-body no-pad-left-right">
                         Invoice Management System
                     </div>
+
+                    <div class="row">
+                        <div class="col-4 m-4" >                    
+                            <div class="d-flex align-items-center">
+                                <div class="card" style="width: 18rem;">
+                                    <div class="card-header">
+                                        <h6 class="mb-0 text-muted">Total Revenue</h6>
+                                        <p class="fs-5 text-dark fw-bold mb-0">{{ $totalRevenue}}</p>
+                                    </div>
+                                </div>
+                            </div> 
+                        </div><!--end col-->
+
+                        <div class="col-4 m-4" >                    
+                            <div class="d-flex align-items-center">
+                                <div class="card" style="width: 18rem;">
+                                    <div class="card-header">
+                                    <h6 class="mb-0 text-muted">Total Outstanding</h6>
+                                    <p class="fs-5 text-dark fw-bold mb-0">{{ $outstandingInvoices}}</p>
+                                    </div>
+                                </div>
+                            </div> 
+                        </div><!--end col-->
+                    </div>
                     <!-- /.card-body -->
                 </div>
                 <!-- /.card -->
@@ -56,6 +80,7 @@
             <!-- /.col -->
         </div>
         <!-- /.row -->
+
     </div>
     
 @endsection
