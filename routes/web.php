@@ -28,10 +28,11 @@ Route::post('/', [RegistrationController::class, 'store'])->name('registration.s
 
 Route::get('login', [LoginController::class, 'create'])->name('login.create'); 
 Route::post('login', [LoginController::class, 'store'])->name('login.store');
+Route::post('logout', [LoginController::class, 'logout'])->name('logout'); 
 
 Route::middleware(['role:user'])->group(function(){
     Route::get('dashboard', [DashBoardController::class, 'index'])->name('user.dashboard');
-    Route::post('logout', [LoginController::class, 'logout'])->name('logout');  
+     
     
     // Manage Invoices
     Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices');
@@ -46,7 +47,6 @@ Route::middleware(['role:user'])->group(function(){
 
 
 
-Route::middleware(['role:admin'])->group(function(){
-    Route::post('logout', [LoginController::class, 'logout'])->name('logout');  
+Route::middleware(['role:admin'])->group(function(){  
     Route::get('admin/dashboard', [AdminDashBoardController::class, 'index'])->name('admin.dashboard');
 });

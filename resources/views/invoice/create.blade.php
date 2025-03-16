@@ -42,7 +42,7 @@
             
         </div>
 
-        <div class="row">
+        <div class="row justify-content-center">
             <!-- Forms Start -->
             <div class="col-lg-10 mt-4">
                 <div class="card rounded shadow">

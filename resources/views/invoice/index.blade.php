@@ -39,7 +39,7 @@
     <div class="layout-specing">
         <div class="flash-message"></div>
 
-        <div class="row">
+        <div class="row justify-content-center">
             <div class="col-lg-10 mt-4">
                 <div class="card rounded shadow">
                     <div class="p-4 border-bottom">
